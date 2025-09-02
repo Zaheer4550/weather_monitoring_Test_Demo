@@ -1,0 +1,273 @@
+{
+	"info": {
+		"_postman_id": "18e45aea-8ea3-4fb6-bdb9-8185dd142f48",
+		"name": "Weather_Monitoring_Test_Demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45974783",
+		"_collection_link": "https://postvehicle-enterprise-team-3244bd21-b4e1-4b1f-98bf-ef9e4de6.postman.co/workspace/student-5-workspace~2b1f8c87-7673-430b-93d9-4f732c44ce25/collection/45974783-18e45aea-8ea3-4fb6-bdb9-8185dd142f48?action=share&source=collection_link&creator=45974783"
+	},
+	"item": [
+		{
+			"name": "Get Current Weather",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// --- Setup ---\r",
+							"const city = pm.iterationData.get(\"city\");\r",
+							"const res = pm.response.json() || {};\r",
+							"const cw = res.current_weather || {};\r",
+							"\r",
+							"// --- Test 1: Status Code ---\r",
+							"pm.test(`Response 200 OK for ${city}`, function () {\r",
+							"    pm.expect(pm.response.code, `Expected 200 but got ${pm.response.code} for ${city}`)\r",
+							"      .to.eql(200);\r",
+							"});\r",
+							"\r",
+							"// --- Test 2: Latency ---\r",
+							"pm.test(`Latency < 1000ms for ${city}`, function () {\r",
+							"    pm.expect(pm.response.responseTime, `Response time ${pm.response.responseTime}ms exceeded for ${city}`)\r",
+							"      .to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"// --- Optional Debug Info (local only) ---\r",
+							"console.log(`${city} → Temp=${cw.temperature}°C, Wind=${cw.windspeed} km/h`);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.open-meteo.com/v1/forecast?latitude={{latitude}}&longitude={{longitude}}&current_weather=true",
+					"protocol": "https",
+					"host": [
+						"api",
+						"open-meteo",
+						"com"
+					],
+					"path": [
+						"v1",
+						"forecast"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}"
+						},
+						{
+							"key": "current_weather",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Daily Forecast",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// --- Setup ---\r",
+							"const city = pm.iterationData.get(\"city\");\r",
+							"const res = pm.response.json() || {};\r",
+							"const daily = res.daily || {};\r",
+							"const maxTemps = daily.temperature_2m_max || [];\r",
+							"const minTemps = daily.temperature_2m_min || [];\r",
+							"\r",
+							"// --- Test 1: Status Code ---\r",
+							"pm.test(`Response 200 OK for ${city}`, function () {\r",
+							"    pm.expect(pm.response.code, `Expected 200 but got ${pm.response.code} for ${city}`)\r",
+							"      .to.eql(200);\r",
+							"});\r",
+							"\r",
+							"// --- Test 2: Latency ---\r",
+							"pm.test(`Latency < 1000ms for ${city}`, function () {\r",
+							"    pm.expect(pm.response.responseTime, `Response time ${pm.response.responseTime}ms exceeded for ${city}`)\r",
+							"      .to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"// --- Test 3: Forecast data available ---\r",
+							"pm.test(`Forecast data available for ${city}`, function () {\r",
+							"    pm.expect(maxTemps.length, `No max temps in forecast for ${city}`).to.be.above(0);\r",
+							"    pm.expect(minTemps.length, `No min temps in forecast for ${city}`).to.be.above(0);\r",
+							"});\r",
+							"\r",
+							"// --- Optional Debug Info (local only) ---\r",
+							"console.log(`${city} → Max[0]=${maxTemps[0]}°C, Min[0]=${minTemps[0]}°C`);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.open-meteo.com/v1/forecast?latitude={{latitude}}&longitude={{longitude}}&daily=temperature_2m_max,temperature_2m_min&timezone={{timezone}}",
+					"protocol": "https",
+					"host": [
+						"api",
+						"open-meteo",
+						"com"
+					],
+					"path": [
+						"v1",
+						"forecast"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}"
+						},
+						{
+							"key": "daily",
+							"value": "temperature_2m_max,temperature_2m_min"
+						},
+						{
+							"key": "timezone",
+							"value": "{{timezone}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Historical Data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const city = pm.iterationData.get(\"city\");\r",
+							"const start = pm.iterationData.get(\"start_date\");\r",
+							"const end = pm.iterationData.get(\"end_date\");\r",
+							"\r",
+							"const res = pm.response.json() || {};\r",
+							"const hist = res.daily || {};\r",
+							"const dates = hist.time || [];\r",
+							"const maxTemps = hist.temperature_2m_max || [];\r",
+							"const minTemps = hist.temperature_2m_min || [];\r",
+							"\r",
+							"// --- Test 1: Status Code ---\r",
+							"pm.test(`Response 200 OK for ${city}`, function () {\r",
+							"    pm.expect(pm.response.code, `Expected 200 but got ${pm.response.code} for ${city}`)\r",
+							"      .to.eql(200);\r",
+							"});\r",
+							"\r",
+							"// --- Test 2: Latency ---\r",
+							"pm.test(`Latency < 1000ms for ${city}`, function () {\r",
+							"    pm.expect(pm.response.responseTime, `Response time ${pm.response.responseTime}ms exceeded for ${city}`)\r",
+							"      .to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"// --- Test 3: Historical data arrays should not be empty ---\r",
+							"pm.test(`Historical data available for ${city}`, function () {\r",
+							"    pm.expect(maxTemps.length, `No historical max temps found for ${city}`).to.be.above(0);\r",
+							"    pm.expect(minTemps.length, `No historical min temps found for ${city}`).to.be.above(0);\r",
+							"});\r",
+							"\r",
+							"// --- Test 4: Validate number of days ---\r",
+							"if (start && end) {\r",
+							"    const startDate = new Date(start);\r",
+							"    const endDate = new Date(end);\r",
+							"    // +1 to include both start & end dates\r",
+							"    const expectedDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;\r",
+							"\r",
+							"    pm.test(`Historical data covers ${expectedDays} days for ${city}`, function () {\r",
+							"        pm.expect(dates.length, `Expected ${expectedDays} days, but got ${dates.length} days for ${city}`)\r",
+							"          .to.eql(expectedDays);\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// --- Console Logs ---\r",
+							"if (dates.length > 0) {\r",
+							"    for (let i = 0; i < dates.length; i++) {\r",
+							"        console.log(`${city} → ${dates[i]}: Max=${maxTemps[i]}°C, Min=${minTemps[i]}°C`);\r",
+							"    }\r",
+							"} else {\r",
+							"    console.log(`${city} → No historical temperature data found between ${start} and ${end}`);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://archive-api.open-meteo.com/v1/archive?latitude={{latitude}}&longitude={{longitude}}&start_date={{start_date}}&end_date={{end_date}}&daily=temperature_2m_max,temperature_2m_min&timezone={{timezone}}",
+					"protocol": "https",
+					"host": [
+						"archive-api",
+						"open-meteo",
+						"com"
+					],
+					"path": [
+						"v1",
+						"archive"
+					],
+					"query": [
+						{
+							"key": "latitude",
+							"value": "{{latitude}}"
+						},
+						{
+							"key": "longitude",
+							"value": "{{longitude}}"
+						},
+						{
+							"key": "start_date",
+							"value": "{{start_date}}"
+						},
+						{
+							"key": "end_date",
+							"value": "{{end_date}}"
+						},
+						{
+							"key": "daily",
+							"value": "temperature_2m_max,temperature_2m_min"
+						},
+						{
+							"key": "timezone",
+							"value": "{{timezone}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

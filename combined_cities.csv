@@ -1,0 +1,13 @@
+city,latitude,longitude,timezone,start_date,end_date
+New York,40.71278,-74.006,America/New_York,2025-08-01,2025-08-07
+Los Angeles,34.05224,-118.244,America/Los_Angeles,2025-08-01,2025-08-07
+Chicago,41.87811,-87.6298,America/Chicago,2025-08-01,2025-08-07
+Houston,29.76043,-95.3698,America/Chicago,2025-08-01,2025-08-07
+New Delhi,28.6448,77.21672,Asia/Kolkata,2025-08-01,2025-08-07
+Mumbai,19.07609,72.87743,Asia/Kolkata,2025-08-01,2025-08-07
+Bengaluru,12.97194,77.59369,Asia/Kolkata,2025-08-01,2025-08-07
+Chennai,13.08784,80.27847,Asia/Kolkata,2025-08-01,2025-08-07
+London,51.5072,-0.1276,Europe/London,2025-08-01,2025-08-07
+Manchester,53.4808,-2.2426,Europe/London,2025-08-01,2025-08-07
+Birmingham,52.4862,-1.8904,Europe/London,2025-08-01,2025-08-07
+Edinburgh,55.9533,-3.1883,Europe/London,2025-08-01,2025-08-07
