@@ -1,0 +1,61 @@
+name: Newman Run + Monitor Sync
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  newman-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Node & Newman
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y nodejs npm jq
+          npm install -g newman newman-reporter-htmlextra
+
+      - name: Update Collection in Postman
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        run: |
+          mkdir -p artifacts
+
+          # Update collection in Postman
+          curl -s -X PUT "https://api.getpostman.com/collections/45974783-18e45aea-8ea3-4fb6-bdb9-8185dd142f48" \
+            -H "X-Api-Key: $POSTMAN_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @Weather_Monitoring_Test_Demo.postman_collection.json \
+            -o artifacts/collection_update.json
+
+          # Trigger monitor run (just for Postman dashboard history)
+          curl -s -X POST "https://api.getpostman.com/monitors/1f087cde-8b0e-4d40-bf0f-7941bfe55d4c/run" \
+            -H "X-Api-Key: $POSTMAN_API_KEY" \
+            -o artifacts/monitor_trigger.json
+
+      - name: Run Newman with CSV
+        run: |
+          mkdir -p reports
+
+          newman run Weather_Monitoring_Test_Demo.postman_collection.json \
+            -d combined_cities.csv \
+            --reporters cli,htmlextra,json \
+            --reporter-htmlextra-export "reports/newman_report.html" \
+            --reporter-json-export "reports/newman_report.json" \
+            --delay-request 250
+
+          # Build CSV summary
+          echo "iteration,requestName,status,responseTime" > reports/newman_report.csv
+          jq -r '.run.executions[] | [.cursor.iteration, .item.name, .response.status, .response.responseTime] | @csv' \
+            reports/newman_report.json >> reports/newman_report.csv
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-artifacts
+          path: |
+            artifacts/
+            reports/
